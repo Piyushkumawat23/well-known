@@ -10,7 +10,7 @@
             @php
                 $product = $cartItem->product;
                 $stock = $cartItem->product->stocks->where('variant', $cartItem['variation'])->first();
-                $subtotal += cart_product_price($cartItem, $product, false, false) * $cartItem['quantity'];
+                $subtotal += cart_product_price($cartItem, $product, false, false);
                 $tax += cart_product_tax($cartItem, $product, false) * $cartItem['quantity'];
                 $cartID = $cartItem['id'];
             @endphp
@@ -18,13 +18,13 @@
                 <div class="row gutters-5 align-items-center">
                     <div class="col-auto w-60px">
                         <div class="row no-gutters align-items-center flex-column aiz-plus-minus">
-                            <button class="btn col-auto btn-icon btn-sm fs-15" type="button" data-type="plus" data-field="qty-{{ $cartID }}">
+                            {{-- <button class="btn col-auto btn-icon btn-sm fs-15" type="button" data-type="plus" data-field="qty-{{ $cartID }}">
                                 <i class="las la-plus"></i>
-                            </button>
+                            </button> --}}
                             <input type="text" name="qty-{{ $cartID }}" id="qty-{{ $cartID }}" class="col border-0 text-center flex-grow-1 fs-16 input-number" placeholder="1" value="{{ $cartItem['quantity'] }}" min="{{ $product->min_qty }}" max="{{ $stock->qty }}" onchange="updateQuantity({{ $cartID }})">
-                            <button class="btn col-auto btn-icon btn-sm fs-15" type="button" data-type="minus" data-field="qty-{{ $cartID }}">
+                            {{-- <button class="btn col-auto btn-icon btn-sm fs-15" type="button" data-type="minus" data-field="qty-{{ $cartID }}">
                                 <i class="las la-minus"></i>
-                            </button>
+                            </button> --}}
                         </div>
                     </div>
                     <div class="col">
@@ -32,8 +32,10 @@
                         <span class="span badge badge-inline fs-12 badge-soft-secondary">{{ $cartItem['variant'] }}</span>
                     </div>
                     <div class="col-auto">
-                        <div class="fs-12 opacity-60">{{ single_price($cartItem['price']) }} x {{ $cartItem['quantity'] }}</div>
-                        <div class="fs-15 fw-600">{{ single_price($cartItem['price']*$cartItem['quantity']) }}</div>
+                        <div class="fs-12 opacity-60">{{ single_price(cart_product_price($cartItem, $product, false, false)) }} </div>
+
+                       <div class="fs-15 fw-600">{{ single_price(cart_product_price($cartItem, $product, false, false)) }}</div>
+
                     </div>
                     <div class="col-auto">
                         <button type="button" class="btn btn-circle btn-icon btn-sm btn-soft-danger ml-2 mr-0" onclick="removeFromCart({{ $cartItem['id'] }})">

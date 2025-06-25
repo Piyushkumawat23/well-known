@@ -9,7 +9,7 @@
 	        <ul class="list-group list-group-flush">
 	        @forelse ($carts as $key => $cartItem)
 	            @php
-	                $subtotal += $cartItem['price']*$cartItem['quantity'];
+	                $subtotal += $cartItem['price'];
 	                $tax += $cartItem['tax']*$cartItem['quantity'];
 	                $stock = $cartItem->product->stocks->where('variant', $cartItem['variation'])->first();
 					$total = $subtotal+$tax+Session::get('pos.shipping', 0) - Session::get('pos.discount', 0);
