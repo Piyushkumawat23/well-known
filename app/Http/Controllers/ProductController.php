@@ -482,121 +482,121 @@ public function pngdownloadBarcode($sku)
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    // public function update(ProductRequest $request, Product $product)
+    // {
+	// 	//echo '<pre>POST'; print_r($_POST); die;
+    //     //Product
+    //     $product = $this->productService->update($request->except([
+    //         '_token', 'sku', 'choice', 'tax_id', 'tax', 'tax_type', 'flash_deal_id', 'flash_discount', 'flash_discount_type'
+    //     ]), $product);
+		
+		
+
+    //     //Product Stock
+    //     foreach ($product->stocks as $key => $stock) {
+    //         $stock->delete();
+    //     }
+
+    //     $request->merge(['product_id' => $product->id]);
+    //     $this->productStockService->store($request->only([
+    //         'colors_active', 'colors', 'choice_no', 'unit_price', 'sku', 'current_stock', 'product_id'
+    //     ]), $product);
+
+    //     //Flash Deal
+    //     $this->productFlashDealService->store($request->only([
+    //         'flash_deal_id', 'flash_discount', 'flash_discount_type'
+    //     ]), $product);
+
+    //     //VAT & Tax
+    //     if ($request->tax_id) {
+    //         ProductTax::where('product_id', $product->id)->delete();
+    //         $request->merge(['product_id' => $product->id]);
+    //         $this->productTaxService->store($request->only([
+    //             'tax_id', 'tax', 'tax_type', 'product_id'
+    //         ]));
+    //     }
+
+
+    //     //Product Related
+    //     $this->productRelatedService->store($request->only([
+    //         'parent_id','product_id'
+    //     ]), $product);
+
+    //     //Product Related
+    //     $this->productVariantImageService->store($request->only([
+    //         'variant_images','product_id'
+    //     ]), $product);
+
+    //     // Product Translations
+    //     ProductTranslation::updateOrCreate(
+    //         $request->only([
+    //             'lang', 'product_id'
+    //         ]),
+    //         $request->only([
+    //             'name', 'unit', 'description'
+    //         ])
+    //     );
+
+    //     flash(translate('Product has been updated successfully'))->success();
+
+    //     Artisan::call('view:clear');
+    //     Artisan::call('cache:clear');
+
+    //     return back();
+    // }
+
+
     public function update(ProductRequest $request, Product $product)
-    {
-		//echo '<pre>POST'; print_r($_POST); die;
-        //Product
-        $product = $this->productService->update($request->except([
-            '_token', 'sku', 'choice', 'tax_id', 'tax', 'tax_type', 'flash_deal_id', 'flash_discount', 'flash_discount_type'
-        ]), $product);
-		
-		
+{
+    // Step 1: Update Product
+    $product = $this->productService->update($request->except([
+        '_token', 'sku', 'choice', 'tax_id', 'tax', 'tax_type', 'flash_deal_id', 'flash_discount', 'flash_discount_type'
+    ]), $product);
 
-        //Product Stock
-        foreach ($product->stocks as $key => $stock) {
-            $stock->delete();
-        }
+    // Step 2: Don't delete existing stocks
+    $request->merge(['product_id' => $product->id]);
 
+    // Step 3: Store new variants only (no deletion)
+    $this->productStockService->updateOrInsertVariants($request->only([
+        'colors_active', 'colors', 'choice_no', 'unit_price', 'sku', 'current_stock', 'product_id'
+    ]), $product);
+
+    // Step 4: Flash Deal
+    $this->productFlashDealService->store($request->only([
+        'flash_deal_id', 'flash_discount', 'flash_discount_type'
+    ]), $product);
+
+    // Step 5: VAT & Tax
+    if ($request->tax_id) {
+        ProductTax::where('product_id', $product->id)->delete();
         $request->merge(['product_id' => $product->id]);
-        $this->productStockService->store($request->only([
-            'colors_active', 'colors', 'choice_no', 'unit_price', 'sku', 'current_stock', 'product_id'
-        ]), $product);
-
-        //Flash Deal
-        $this->productFlashDealService->store($request->only([
-            'flash_deal_id', 'flash_discount', 'flash_discount_type'
-        ]), $product);
-
-        //VAT & Tax
-        if ($request->tax_id) {
-            ProductTax::where('product_id', $product->id)->delete();
-            $request->merge(['product_id' => $product->id]);
-            $this->productTaxService->store($request->only([
-                'tax_id', 'tax', 'tax_type', 'product_id'
-            ]));
-        }
-
-
-        //Product Related
-        $this->productRelatedService->store($request->only([
-            'parent_id','product_id'
-        ]), $product);
-
-        //Product Related
-        $this->productVariantImageService->store($request->only([
-            'variant_images','product_id'
-        ]), $product);
-
-        // Product Translations
-        ProductTranslation::updateOrCreate(
-            $request->only([
-                'lang', 'product_id'
-            ]),
-            $request->only([
-                'name', 'unit', 'description'
-            ])
-        );
-
-        flash(translate('Product has been updated successfully'))->success();
-
-        Artisan::call('view:clear');
-        Artisan::call('cache:clear');
-
-        return back();
+        $this->productTaxService->store($request->only([
+            'tax_id', 'tax', 'tax_type', 'product_id'
+        ]));
     }
 
+    // Step 6: Related & Variant Images
+    $this->productRelatedService->store($request->only([
+        'parent_id','product_id'
+    ]), $product);
 
-//     public function update(ProductRequest $request, Product $product)
-// {
-//     // Step 1: Update Product
-//     $product = $this->productService->update($request->except([
-//         '_token', 'sku', 'choice', 'tax_id', 'tax', 'tax_type', 'flash_deal_id', 'flash_discount', 'flash_discount_type'
-//     ]), $product);
+    $this->productVariantImageService->store($request->only([
+        'variant_images','product_id'
+    ]), $product);
 
-//     // Step 2: Don't delete existing stocks
-//     $request->merge(['product_id' => $product->id]);
+    // Step 7: Product Translations
+    ProductTranslation::updateOrCreate(
+        $request->only(['lang', 'product_id']),
+        $request->only(['name', 'unit', 'description'])
+    );
 
-//     // Step 3: Store new variants only (no deletion)
-//     $this->productStockService->updateOrInsertVariants($request->only([
-//         'colors_active', 'colors', 'choice_no', 'unit_price', 'sku', 'current_stock', 'product_id'
-//     ]), $product);
+    flash(translate('Product has been updated successfully'))->success();
 
-//     // Step 4: Flash Deal
-//     $this->productFlashDealService->store($request->only([
-//         'flash_deal_id', 'flash_discount', 'flash_discount_type'
-//     ]), $product);
+    Artisan::call('view:clear');
+    Artisan::call('cache:clear');
 
-//     // Step 5: VAT & Tax
-//     if ($request->tax_id) {
-//         ProductTax::where('product_id', $product->id)->delete();
-//         $request->merge(['product_id' => $product->id]);
-//         $this->productTaxService->store($request->only([
-//             'tax_id', 'tax', 'tax_type', 'product_id'
-//         ]));
-//     }
-
-//     // Step 6: Related & Variant Images
-//     $this->productRelatedService->store($request->only([
-//         'parent_id','product_id'
-//     ]), $product);
-
-//     $this->productVariantImageService->store($request->only([
-//         'variant_images','product_id'
-//     ]), $product);
-
-//     // Step 7: Product Translations
-//     ProductTranslation::updateOrCreate(
-//         $request->only(['lang', 'product_id']),
-//         $request->only(['name', 'unit', 'description'])
-//     );
-
-//     flash(translate('Product has been updated successfully'))->success();
-
-//     Artisan::call('view:clear');
-//     Artisan::call('cache:clear');
-
-//     return back();
-// }
+    return back();
+}
 
 
     /**
@@ -1224,148 +1224,111 @@ public function updateAllSkuCombinations()
 
 
 
-// my code sku shi example :- 77-6-925 ,77-7-925  77 this product id anad 6 size and 925 metal
-// and aapne isab se chnages kar skte h code comment h 
+// my code sku shi 
+// public function sku_combination_edit(Request $request)
+// {
+//     $product = Product::findOrFail($request->id);
 
-public function sku_combination_edit(Request $request)
-{
-    $product = Product::findOrFail($request->id);
+//     // Cache all attribute values from DB
+//     $attributeValues = AttributeValue::all()->keyBy('value');
 
-    // Cache all attribute values from DB
-    $attributeValues = AttributeValue::all()->keyBy('value');
+//     $options = array();
+//     if ($request->has('colors_active') && $request->has('colors') && count($request->colors) > 0) {
+//         $colors_active = 1;
+//         array_push($options, $request->colors);
+//     } else {
+//         $colors_active = 0;
+//     }
 
-    $options = array();
-    if ($request->has('colors_active') && $request->has('colors') && count($request->colors) > 0) {
-        $colors_active = 1;
-        array_push($options, $request->colors);
-    } else {
-        $colors_active = 0;
-    }
+//     $product_name = $request->name;
+//     $unit_price = $request->unit_price;
 
-    $product_name = $request->name;
-    $unit_price = $request->unit_price;
+//     // Handle choice options
+//     if ($request->has('choice_no')) {
+//         foreach ($request->choice_no as $key => $no) {
+//             $name = 'choice_options_' . $no;
+//             // if ($request->has($name)) {
+//             //     $data = [];
+//             //     foreach ($request[$name] as $item) {
+//             //         array_push($data, $item);
+//             //     }
+//             //     array_push($options, $data);
+//             // }
 
-    // Handle choice options
-    if ($request->has('choice_no')) {
-        foreach ($request->choice_no as $key => $no) {
-            $name = 'choice_options_' . $no;
-            // if ($request->has($name)) {
-            //     $data = [];
-            //     foreach ($request[$name] as $item) {
-            //         array_push($data, $item);
-            //     }
-            //     array_push($options, $data);
-            // }
-
-            if ($request->has($name) && is_array($request->input($name))) {
-                $data = [];
-                foreach ($request->input($name) as $item) {
-                    $data[] = $item;
-                }
-                $options[] = $data;
-            }
+//             if ($request->has($name) && is_array($request->input($name))) {
+//                 $data = [];
+//                 foreach ($request->input($name) as $item) {
+//                     $data[] = $item;
+//                 }
+//                 $options[] = $data;
+//             }
             
-        }
-    }
+//         }
+//     }
 
-    $combinations = Combinations::makeCombinations($options);
-    echo "<pre>"; print_r($combinations);
+//     $combinations = Combinations::makeCombinations($options);
+//     // echo "<pre>"; print_r($combinations);
 
-    // Retrieve category and brand names
-    $category_name = $product->category ? substr($product->category->name, 0, 2) : '';
-    $brand_name = $product->brand ? substr($product->brand->name, 0, 2) : '';
+//     // Retrieve category and brand names
+//     $category_name = $product->category ? substr($product->category->name, 0, 2) : '';
+//     $brand_name = $product->brand ? substr($product->brand->name, 0, 2) : '';
 
-    // Generate SKU list
-    $sku_list = [];
-    foreach ($combinations as $combination) {
-        // Start building the SKU
-        $sku = '';
-        
-        $sku .= $product->id . '-';
-        
-        if (!empty($brand_name)) {
-            $sku .= $brand_name . '-';
-}
+//     // Generate SKU list
+//     $sku_list = [];
+//     foreach ($combinations as $combination) {
+//         // Start building the SKU
+//         $sku = '';
 
-        // Add category name if it exists
-        if (!empty($category_name)) {
-            $sku .= $category_name . '-';
-        }
+//         // Add category name if it exists
+//         // if (!empty($category_name)) {
+//         //     $sku .= $category_name . '-';
+//         // }
 
-        // Add product ID
+//         // Add product ID
+//         $sku .= $product->id . '-';
 
-        // Loop through each combination item and replace with attribute value abbreviation
-        // foreach ($combination as $item) {
-        //     $attrVal = $attributeValues[$item] ?? null;
+//         // Loop through each combination item and replace with attribute value abbreviation
+//         foreach ($combination as $item) {
+//             $attrVal = $attributeValues[$item] ?? null;
 
-        //     if ($attrVal) {
-        //         // Customize abbreviation logic
-        //         $words = explode(' ', $attrVal->value);
-        //         print_r($words);
-        //         $abbr = '';
+//             if ($attrVal) {
+//                 // Customize abbreviation logic
+//                 $words = explode(' ', $attrVal->value);
+//                 $abbr = '';
 
-        //         if (preg_match('/^\d+K$/', $words[0])) {
-        //             $abbr .= $words[0]; // e.g., 18K or 14K
-        //             for ($i = 1; $i < count($words); $i++) {
-        //                 $abbr .= strtoupper(substr($words[$i], 0, 1)); // First letter of each next word
-        //             }
-        //         } else {
-        //             // Fallback to first 3 chars if not "K" formatted
-        //             $abbr = strtoupper(substr($attrVal->value, 0, 3));
-        //         }
+//                 if (preg_match('/^\d+K$/', $words[0])) {
+//                     $abbr .= $words[0]; // e.g., 18K or 14K
+//                     for ($i = 1; $i < count($words); $i++) {
+//                         $abbr .= strtoupper(substr($words[$i], 0, 1)); // First letter of each next word
+//                     }
+//                 } else {
+//                     // Fallback to first 3 chars if not "K" formatted
+//                     $abbr = strtoupper(substr($attrVal->value, 0, 3));
+//                 }
 
-        //         $sku .= $abbr . '-';
-        //     } else {
-        //         // If not found in DB, use first 3 chars as fallback
-        //         $sku .= strtoupper(substr($item, 0, 3)) . '-';
-        //     }
-        // }
-        foreach ($combination as $item) {
-            // Skip item if it's numeric only (likely a size like 6, 7, etc.)
-            if (is_numeric($item)) {
-                continue;
-            }
-        
-            $attrVal = $attributeValues[$item] ?? null;
-        
-            if ($attrVal) {
-                // Customize abbreviation logic
-                $words = explode(' ', $attrVal->value);
-                $abbr = '';
-        
-                if (preg_match('/^\d+K$/', $words[0])) {
-                    $abbr .= $words[0];
-                    for ($i = 1; $i < count($words); $i++) {
-                        $abbr .= strtoupper(substr($words[$i], 0, 1));
-                    }
-                } else {
-                    $abbr = strtoupper(substr($attrVal->value, 0, 3));
-                }
-        
-                $sku .= $abbr . '-';
-            } else {
-                $sku .= strtoupper(substr($item, 0, 3)) . '-';
-            }
-        }
-        
-        
-        if (!empty($unit_price)) {
-            $sku .= $unit_price . '-';
-        }
-        // Remove trailing hyphen
-        $sku = rtrim($sku, '-');
-
-        // Add SKU to the list
-        $sku_list[] = $sku;
-    }
-
-    // Return view with SKU list
-    return view('backend.product.products.sku_combinations_edit', compact('combinations', 'unit_price', 'colors_active', 'product_name', 'product', 'sku_list'));
-}
+//                 $sku .= $abbr . '-';
+//             } else {
+//                 // If not found in DB, use first 3 chars as fallback
+//                 $sku .= strtoupper(substr($item, 0, 3)) . '-';
+//             }
+//         }
 
 
+//         // if (!empty($brand_name)) {
+//         //                    $sku .= $brand_name . '-';
+//         //    }
 
-// this is code use a 0001 number sku code 
+//         // Remove trailing hyphen
+//         $sku = rtrim($sku, '-');
+
+//         // Add SKU to the list
+//         $sku_list[] = $sku;
+//     }
+
+//     // Return view with SKU list
+//     return view('backend.product.products.sku_combinations_edit', compact('combinations', 'unit_price', 'colors_active', 'product_name', 'product', 'sku_list'));
+// }
+
 // public function sku_combination_edit(Request $request)
 // {
 //     $product = Product::findOrFail($request->id);
@@ -1381,58 +1344,61 @@ public function sku_combination_edit(Request $request)
 //     $product_name = $request->name;
 //     $unit_price = $request->unit_price;
 
-//     // Collect choice options
 //     if ($request->has('choice_no')) {
-//         foreach ($request->choice_no as $no) {
+//         foreach ($request->choice_no as $key => $no) {
 //             $name = 'choice_options_' . $no;
-//             if ($request->has($name) && is_array($request->$name)) {
-//                 $options[] = $request->$name;
+//             if ($request->has($name) && is_array($request->input($name))) {
+//                 $options[] = $request->input($name);
 //             }
 //         }
 //     }
 
 //     $combinations = Combinations::makeCombinations($options);
 
-//     // ✅ Existing SKUs for this product
-//     $existingSkus = ProductStock::where('product_id', $product->id)
-//         ->whereNotNull('sku')
-//         ->pluck('sku')
-//         ->map(fn($sku) => intval($sku))
-//         ->toArray();
+//     // ✅ Get last skucode
+//     $last_code = \DB::table('product_stocks')->max('skucode');
+//     $next_code = $last_code ? intval($last_code) + 1 : 1;
 
-//     // ✅ Existing variants for this product
+//     // ✅ Normalize variant strings in DB
 //     $existingVariants = ProductStock::where('product_id', $product->id)
-//         ->whereNotNull('sku')
 //         ->get()
 //         ->mapWithKeys(function ($stock) {
-//             return [strtolower(trim($stock->variant)) => $stock->sku];
+//             return [strtolower(trim($stock->variant)) => $stock->skucode];
 //         })
 //         ->toArray();
-
-//     // ✅ Start SKU from max(existing) + 1
-//     $sku_index = !empty($existingSkus) ? max($existingSkus) + 1 : 1;
 
 //     $sku_list = [];
 
 //     foreach ($combinations as $combination) {
 //         $variant = implode('-', $combination);
 //         $normalizedVariant = strtolower(trim($variant));
-
+    
+//         // 👉 Print before saving or skipping
 //         echo "<pre>";
-//         echo "🔍 Variant: $variant\n";
-
+//         echo "Checking Variant: " . $variant . "\n";
 //         if (isset($existingVariants[$normalizedVariant])) {
-//             echo "✅ SKIPPED - Already exists with SKU: {$existingVariants[$normalizedVariant]}\n";
-//             $sku_list[] = $existingVariants[$normalizedVariant];
+//             echo "➡️ SKIPPED - Already Exists with skucode: " . $existingVariants[$normalizedVariant] . "\n";
+//             echo "</pre>";
+//             $sku_list[] = str_pad($existingVariants[$normalizedVariant], 4, '0', STR_PAD_LEFT);
 //         } else {
-//             $new_sku = str_pad($sku_index, 4, '0', STR_PAD_LEFT);
-//             echo "🆕 NEW - Assigning SKU: $new_sku\n";
-//             $sku_list[] = $new_sku;
-//             $sku_index++;
+//             echo "✅ INSERTING - New skucode: " . $next_code . "\n";
+//             echo "</pre>";
+    
+//             // die("sadfsa");
+//             ProductStock::create([
+//                 'product_id' => $product->id,
+//                 'variant' => $variant,
+//                 'sku' => null,
+//                 'skucode' => $next_code,
+//                 'price' => $unit_price ?? 0,
+//                 'qty' => 0,
+//             ]);
+    
+//             $sku_list[] = str_pad($next_code, 4, '0', STR_PAD_LEFT);
+//             $next_code++;
 //         }
-
-//         echo "</pre>";
 //     }
+    
 
 //     return view('backend.product.products.sku_combinations_edit', compact(
 //         'combinations',
@@ -1443,6 +1409,83 @@ public function sku_combination_edit(Request $request)
 //         'sku_list'
 //     ));
 // }
+public function sku_combination_edit(Request $request)
+{
+    $product = Product::findOrFail($request->id);
+
+    $options = [];
+    if ($request->has('colors_active') && $request->has('colors') && count($request->colors) > 0) {
+        $colors_active = 1;
+        $options[] = $request->colors;
+    } else {
+        $colors_active = 0;
+    }
+
+    $product_name = $request->name;
+    $unit_price = $request->unit_price;
+
+    // Collect choice options
+    if ($request->has('choice_no')) {
+        foreach ($request->choice_no as $no) {
+            $name = 'choice_options_' . $no;
+            if ($request->has($name) && is_array($request->$name)) {
+                $options[] = $request->$name;
+            }
+        }
+    }
+
+    $combinations = Combinations::makeCombinations($options);
+
+    // ✅ Existing SKUs for this product
+    $existingSkus = ProductStock::where('product_id', $product->id)
+        ->whereNotNull('sku')
+        ->pluck('sku')
+        ->map(fn($sku) => intval($sku))
+        ->toArray();
+
+    // ✅ Existing variants for this product
+    $existingVariants = ProductStock::where('product_id', $product->id)
+        ->whereNotNull('sku')
+        ->get()
+        ->mapWithKeys(function ($stock) {
+            return [strtolower(trim($stock->variant)) => $stock->sku];
+        })
+        ->toArray();
+
+    // ✅ Start SKU from max(existing) + 1
+    $sku_index = !empty($existingSkus) ? max($existingSkus) + 1 : 1;
+
+    $sku_list = [];
+
+    foreach ($combinations as $combination) {
+        $variant = implode('-', $combination);
+        $normalizedVariant = strtolower(trim($variant));
+
+        echo "<pre>";
+        echo "🔍 Variant: $variant\n";
+
+        if (isset($existingVariants[$normalizedVariant])) {
+            echo "✅ SKIPPED - Already exists with SKU: {$existingVariants[$normalizedVariant]}\n";
+            $sku_list[] = $existingVariants[$normalizedVariant];
+        } else {
+            $new_sku = str_pad($sku_index, 4, '0', STR_PAD_LEFT);
+            echo "🆕 NEW - Assigning SKU: $new_sku\n";
+            $sku_list[] = $new_sku;
+            $sku_index++;
+        }
+
+        echo "</pre>";
+    }
+
+    return view('backend.product.products.sku_combinations_edit', compact(
+        'combinations',
+        'unit_price',
+        'colors_active',
+        'product_name',
+        'product',
+        'sku_list'
+    ));
+}
 
 
 
