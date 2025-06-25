@@ -1,0 +1,34 @@
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VEVENT
+DTSTART:20230107T073000Z
+DTEND:20230107T083000Z
+DTSTAMP:20230102T100924Z
+ORGANIZER;CN=S Sharma:mailto:shashikant.sharma@appsavio.com
+UID:ccojaeb66kqjgb9m68sjib9k60om2b9p6or66b9pcgpj4opg6sr34p1mc4@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=S Sharma;X-NUM-GUESTS=0:mailto:shashikant.sharma@appsavio.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=vishalsinghbanna2013@gmail.com;X-NUM-GUESTS=0:mailto:vishalsinghban
+ na2013@gmail.com
+X-GOOGLE-CONFERENCE:https://meet.google.com/hwc-wuac-ccp
+X-MICROSOFT-CDO-OWNERAPPTID:1305983250
+CREATED:20230102T100922Z
+DESCRIPTION:-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~
+ :~:~:~:~:~:~:~:~::~:~::-\nJoin with Google Meet: https://meet.google.com/hw
+ c-wuac-ccp\nOr dial: (US) +1 567-318-0005 PIN: 703650073#\nMore phone numbe
+ rs: https://tel.meet/hwc-wuac-ccp?pin=3219647609144&hs=7\n\nLearn more abou
+ t Meet at: https://support.google.com/a/users/answer/9282720\n\nPlease do n
+ ot edit this section.\n-::~:~::~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:~:
+ ~:~:~:~:~:~:~:~:~:~:~:~:~:~::~:~::-
+LAST-MODIFIED:20230102T100922Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:Interview Vishal
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
