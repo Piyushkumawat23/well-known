@@ -3,7 +3,7 @@
 <style>
     .barcode-tag {
         width: 400px;
-        height: 60px;
+        height: 80px;
         margin: 8px auto;
         border: 1px solid #000;
         font-size: 10px;
@@ -42,7 +42,7 @@
 
     .custom-barcode img {
         width: 190px;
-        height: 45px;
+        height: 48px;
         object-fit: contain;
     }
 
@@ -90,7 +90,10 @@
     </div>
 
     <div class="action-buttons">
-        <button class="btn btn-primary btn-sm" onclick="window.print()">Print Tags</button>
+        {{-- <button class="btn btn-primary btn-sm" onclick="window.print()">Print Tags</button> --}}
+
+        <button class="btn btn-primary btn-sm" onclick="downloadPDF()">Print Tags</button>
+
     </div>
 
     <div class="card-body text-center">
@@ -103,14 +106,21 @@
                 <div class="barcode-tag">
                     <div class="tag-front">
                         <div class="tag-row">
-                            <span><strong>Brand:</strong> {{ $product->brand->name ?? 'N/A' }}</span>
+                            <span><strong>{{ get_setting('website_name')}}</strong> </span>
                         </div>
                         <div class="tag-row">
-                            <span><strong>Metal:</strong> {{ $stock->metal ?? 'N/A' }}</span>
+                            <span>{{ '$'.$product->unit_price ?? 'N/A' }}</span>
+                        </div>
+
+                        <div class="tag-row">
+                            <span>{{ $product->brand->name ?? 'N/A' }}</span>
                         </div>
                         <div class="tag-row">
-                            <span><strong>SKU:</strong> {{ $stock->sku ?? 'N/A' }}</span>
-                            <span><strong>Size:</strong> {{ $stock->size ?? 'N/A' }}</span>
+                            <span> {{ $stock->metal ?? 'N/A' }}</span>
+                        </div>
+                        <div class="tag-row">
+                            <span>{{ $stock->sku ?? 'N/A' }}</span>
+                            <span>{{ $stock->size ?? ''}}</span>
                         </div>
                     </div>
                     <div class="tag-back">
@@ -129,4 +139,27 @@
         @endif
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+    function downloadPDF() {
+        const element = document.querySelector('.card-body');
+    
+        const productName = @json($product->name);
+        const dateStr = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+        const fileName = `Barcodes-${productName}-${dateStr}.pdf`;
+    
+        var opt = {
+            margin:       0.2,
+            filename:     fileName,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+    
+        html2pdf().set(opt).from(element).save();
+    }
+    </script>
+
+
 @endsection
