@@ -373,43 +373,89 @@ class ProductController extends Controller
     //     return view('backend.product.products.barcode', compact('product'));
     // }
     
+    // public function admin_product_barcode(Request $request, $id)
+    // {
+    //     $product = Product::with('stocks')->findOrFail($id);
+    //     $brands = Brand::all();
+    
+    //     $known_metals = ['18KGoldVermeil', 'SterlingSilver', 'RoseGold', 'Silver', 'Gold']; // Expand list
+    
+    //     foreach ($product->stocks as $stock) {
+    //         $variant_parts = explode('-', $stock->variant);
+    //         $metal = null;
+    //         $size = null;
+    
+    //         foreach ($variant_parts as $part) {
+    //             $partTrimmed = trim($part);
+    
+    //             if (in_array($partTrimmed, $known_metals)) {
+    //                 $metal = $partTrimmed;
+    //             } elseif (is_numeric($partTrimmed) || preg_match('/^[0-9.]+(cm|mm|in)?$/i', $partTrimmed)) {
+    //                 $size = $partTrimmed;
+    //             }
+    //         }
+    
+    //         // If still not assigned, fallback
+    //         if (!$metal && count($variant_parts) >= 1) {
+    //             $metal = $variant_parts[0];
+    //         }
+    //         if (!$size && count($variant_parts) >= 2) {
+    //             $size = $variant_parts[1];
+    //         }
+    
+    //         $stock->metal = $metal;
+    //         $stock->size = $size;
+    //     }
+    
+    //     return view('backend.product.products.barcode', compact('product', 'brands'));
+    // }
+    
+
     public function admin_product_barcode(Request $request, $id)
-    {
-        $product = Product::with('stocks')->findOrFail($id);
-        $brands = Brand::all();
-    
-        $known_metals = ['18KGoldVermeil', 'SterlingSilver', 'RoseGold', 'Silver', 'Gold']; // Expand list
-    
-        foreach ($product->stocks as $stock) {
-            $variant_parts = explode('-', $stock->variant);
-            $metal = null;
-            $size = null;
-    
+{
+    $product = Product::with('stocks')->findOrFail($id);
+    $brands = Brand::all();
+
+    $known_metals = ['18KGoldVermeil', 'SterlingSilver', 'RoseGold', 'Silver', 'Gold']; // Expand as needed
+
+    foreach ($product->stocks as $stock) {
+        $variant_parts = explode('-', $stock->variant);
+        $metal = null;
+        $size = null;
+
+        foreach ($variant_parts as $part) {
+            $partTrimmed = trim($part);
+
+            // Check if it matches metal
+            if (in_array($partTrimmed, $known_metals)) {
+                $metal = $partTrimmed;
+            }
+
+            // Check if it’s size (number or number + unit like cm/mm/in)
+            if (!$size && preg_match('/^\d+(\.\d+)?(cm|mm|in)?$/i', $partTrimmed)) {
+                $size = $partTrimmed;
+            }
+        }
+
+        // Fallbacks
+        if (!$metal) {
             foreach ($variant_parts as $part) {
                 $partTrimmed = trim($part);
-    
-                if (in_array($partTrimmed, $known_metals)) {
+                if ($partTrimmed !== $size) {
                     $metal = $partTrimmed;
-                } elseif (is_numeric($partTrimmed) || preg_match('/^[0-9.]+(cm|mm|in)?$/i', $partTrimmed)) {
-                    $size = $partTrimmed;
+                    break;
                 }
             }
-    
-            // If still not assigned, fallback
-            if (!$metal && count($variant_parts) >= 1) {
-                $metal = $variant_parts[0];
-            }
-            if (!$size && count($variant_parts) >= 2) {
-                $size = $variant_parts[1];
-            }
-    
-            $stock->metal = $metal;
-            $stock->size = $size;
         }
-    
-        return view('backend.product.products.barcode', compact('product', 'brands'));
+
+        $stock->metal = $metal;
+        $stock->size = $size;
     }
-    
+
+    return view('backend.product.products.barcode', compact('product', 'brands'));
+}
+
+
     // public function downloadBarcode($sku)
     // {
     //     try {
@@ -557,9 +603,8 @@ public function pngdownloadBarcode($sku)
     $request->merge(['product_id' => $product->id]);
 
     // Step 3: Store new variants only (no deletion)
-    $this->productStockService->updateOrInsertVariants($request->only([
-        'colors_active', 'colors', 'choice_no', 'unit_price', 'sku', 'current_stock', 'product_id'
-    ]), $product);
+    $this->productStockService->updateOrInsertVariants($request->all(), $product);
+
 
     // Step 4: Flash Deal
     $this->productFlashDealService->store($request->only([
@@ -1409,6 +1454,7 @@ public function updateAllSkuCombinations()
 //         'sku_list'
 //     ));
 // }
+
 public function sku_combination_edit(Request $request)
 {
     $product = Product::findOrFail($request->id);
